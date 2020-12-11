@@ -30,21 +30,25 @@ data:
   MYSQL_HOST: YXp1cmUtdm90ZS1iYWNr
   MYSQL_ROOT_PASSWORD: UGFzc3dvcmQxMg==
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: azure-vote-back
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: azure-vote-back
   template:
     metadata:
       labels:
         app: azure-vote-back
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
       - name: azure-vote-back
-        image: microsoft/azure-vote-back:v1
-        args: ["--ignore-db-dir=lost+found"]
+        image: voteapptest.azurecr.io/azure-vote-mysql
         ports:
         - containerPort: 3306
           name: mysql
@@ -86,31 +90,32 @@ spec:
   - port: 3306
   selector:
     app: azure-vote-back
+
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: azure-vote-front
 spec:
-  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-vote-front
+  replicas: 3
   strategy:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-  minReadySeconds: 5 
+  minReadySeconds: 5
   template:
     metadata:
       labels:
         app: azure-vote-front
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
       - name: azure-vote-front
-        image: microsoft/azure-vote-front:v1
-        resources:
-          requests:
-            cpu: 250m
-          limits:
-            cpu: 500m
+        image: voteapptest.azurecr.io/azure-vote
         ports:
         - containerPort: 80
         resources:
@@ -140,6 +145,22 @@ spec:
             secretKeyRef:
               name: azure-vote
               key: MYSQL_HOST
+        - name: FLAG
+          value: prod
+        livenessProbe:
+          httpGet:
+            port: 80
+            path: /health
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 9
+        readinessProbe:
+          httpGet:
+            port: 80
+            path: /health
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
