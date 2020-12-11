@@ -17,6 +17,9 @@ def client(app):
     with app.test_client() as client:
         yield client
 
-def test(app, client):
-    assert True
+
+def test_health(app, client):
+    """Health call should return successful status code"""
+    rv = client.get('/health')
+    assert status.is_success(rv.status_code)
 
