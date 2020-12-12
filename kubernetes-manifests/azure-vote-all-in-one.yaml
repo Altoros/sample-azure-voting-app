@@ -100,7 +100,7 @@ spec:
   selector:
     matchLabels:
       app: azure-vote-front
-  replicas: 1
+  replicas: 3
   strategy:
     rollingUpdate:
       maxSurge: 1
