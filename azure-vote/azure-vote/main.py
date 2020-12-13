@@ -93,8 +93,8 @@ def create_app():
 
     @app.route('/health')
     def health():
-        if app.config['FLAG'] == 'prod':
-            return '', 503
+#         if app.config['FLAG'] == 'prod':
+#             return '', 503
         return 'UP'
 
     @app.route('/results')
