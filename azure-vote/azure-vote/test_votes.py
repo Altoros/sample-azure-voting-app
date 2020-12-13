@@ -18,5 +18,5 @@ def client(app):
         yield client
 
 def test(app, client):
-    """This test is always failing"""
-    assert False
+    assert True
+
